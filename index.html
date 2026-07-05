@@ -2,22 +2,22 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>nori-pixl　拡張タグ取り扱い説明ページ</title>
+    <title>◆◆ 90sカスタムタグ・エンジン 取扱説明書 [決定版] ◆◆</title>
     <!-- 合体させたJavaScriptファイルを読み込む（同じフォルダにある想定） -->
-    <script src="tag.js"></script>
+    <script src="retro-effects.js"></script>
 </head>
 <body style="background-color: #000000; color: #ffffff; font-family: 'MS Pゴシック', sans-serif; padding: 30px; line-height: 1.6;">
 
     <center>
         <script type="text/rainbow">
-            <h1 style="margin: 0; font-size: 36px;">★ WELCOME TO MY CODESPECIFICATION ★</h1>
+            <h1 style="margin: 0; font-size: 36px;">★ WELCOME TO MY NEW CODESPECIFICATION ★</h1>
         </script>
-        <p style="color: #00ffcc;">〜 現代のブラウザに古き良きインターネットの鼓動を呼び覚ます画期的スクリプト 〜</p>
+        <p style="color: #00ffcc;">〜 ブラウザに構造を壊されない「親子スクリプトタグ」を採用した完全版 〜</p>
     </center>
 
     <hr style="border: 1px dashed #ff00ff; margin: 30px 0;">
 
-    <h2>■ エフェクト一覧と記述ルール</h2>
+    <h2>■ 新型エフェクト一覧と記述ルール</h2>
     <p>すべての機能は <code>&lt;script type="メディア/エフェクト/パラメータ"&gt;</code> の形式で呼び出します。</p>
 
     <table border="1" bordercolor="#333333" cellpadding="10" cellspacing="0" style="width: 100%; background-color: #111111; text-align: left;">
@@ -27,108 +27,120 @@
             <th style="width: 40%;">HTMLの書き方例</th>
         </tr>
 
-        <!-- 1. Blink -->
+        <!-- 1. 新型 Switch (通常) -->
         <tr>
-            <td><b>text/blink</b><br><small>ネットスケープ風点滅</small></td>
+            <td><b>switch/ID</b><br><small>1秒ごとに子が自動ループ切り替え</small></td>
             <td>
-                <script type="text/blink">
-                    <span style="color: #ff0000; font-weight: bold;">【警告】文字がチカチカ点滅します</span>
-                </script>
-            </td>
-            <td><code>&lt;script type="text/blink"&gt;&lt;span&gt;点滅&lt;/span&gt;&lt;/script&gt;</code></td>
-        </tr>
-
-        <!-- 2. Rainbow -->
-        <tr>
-            <td><b>text/rainbow</b><br><b>img/rainbow</b><br><small>七色グラデーション</small></td>
-            <td>
-                <script type="text/rainbow">
-                    <h3 style="margin: 0;">キリバン報告掲示板</h3>
-                </script>
-                <br>
-                <script type="img/rainbow">
-                    https://placeholder.com
+                <script type="switch/box1">
+                    <script type="switch/box1/1">
+                        <b style="color: red;">【緊急】サーバーを移転しました！</b>
+                    </script>
+                    <script type="switch/box1/2">
+                        <b style="color: gold;">【お知らせ】キリバンを踏んだ方はBBSへ！</b>
+                    </script>
                 </script>
             </td>
             <td>
-                <code>&lt;script type="text/rainbow"&gt;&lt;h3&gt;文字&lt;/h3&gt;&lt;/script&gt;</code><br>
-                <code>&lt;script type="img/rainbow"&gt;画像URL&lt;/script&gt;</code>
-            </td>
-        </tr>
-
-        <!-- 3. Slide -->
-        <tr>
-            <td><b>text/slide</b><br><b>text/slide/alternate</b><br><small>IE流れる文字（marquee）</small></td>
-            <td>
-                <script type="text/slide">
-                    <span style="color: #00ff00;">★★★ 最新ニュースが右から左へ通り抜けます ★★★</span>
-                </script>
-                <br>
-                <script type="text/slide/alternate">
-                    <span style="color: #ff00ff;">端っこで跳ね返るテキスト</span>
-                </script>
-            </td>
-            <td>
-                <code>&lt;script type="text/slide"&gt;流れる文字&lt;/script&gt;</code><br>
-                <code>&lt;script type="text/slide/alternate"&gt;往復&lt;/script&gt;</code>
-            </td>
-        </tr>
-
-        <!-- 4. Switch -->
-        <tr>
-            <td><b>switch</b><br><b>switch/○○ms</b><br><small>1秒（時間）ごと高速ローテ</small></td>
-            <td>
-                <script type="switch/500ms">
-                    <1><b style="color: yellow;">★大特価★</b></1>
-                    <2><b style="color: red;">★激レア★</b></2>
-                    <3><b style="color: lime;">★超激安★</b></3>
-                </script>
-            </td>
-            <td>
-                <code>&lt;script type="switch/500ms"&gt;</code><br>
-                <code>&nbsp;&nbsp;&lt;1&gt;中身1&lt;/1&gt;&lt;2&gt;中身2&lt;/2&gt;</code><br>
+                <code>&lt;script type="switch/box1"&gt;</code><br>
+                <code>&nbsp;&nbsp;&lt;script type="switch/box1/1"&gt;中身1&lt;/script&gt;</code><br>
+                <code>&nbsp;&nbsp;&lt;script type="switch/box1/2"&gt;中身2&lt;/script&gt;</code><br>
                 <code>&lt;/script&gt;</code>
             </td>
         </tr>
 
-        <!-- 5. Water -->
+        <!-- 2. 新型 Switch (時間カスタム + 入れ子) -->
         <tr>
-            <td><b>text/water/○○ms</b><br><small>水面ゆらゆら歪み</small></td>
+            <td><b>switch/ID/時間ms</b><br><small>可変スピード ＆ エフェクトの合わせ技</small></td>
             <td>
-                <script type="text/water/1000ms">
-                    <h3 style="color: #6600ff; margin: 0; text-shadow: 0 0 5px #ff00ff;">呪われた裏ページ...</h3>
+                <script type="switch/box2/400ms">
+                    <script type="switch/box2/1">
+                        <script type="text/blink"><h3 style="color: yellow; margin:0;">★超激安価格★</h3></script>
+                    </script>
+                    <script type="switch/box2/2">
+                        <script type="text/rainbow"><h3 style="margin:0;">★今だけ大特価★</h3></script>
+                    </script>
                 </script>
             </td>
-            <td><code>&lt;script type="text/water/1000ms"&gt;テキスト&lt;/script&gt;</code></td>
+            <td>
+                <code>&lt;script type="switch/box2/400ms"&gt;</code><br>
+                <code>&nbsp;&nbsp;&lt;script type="switch/box2/1"&gt;</code><br>
+                <code>&nbsp;&nbsp;&nbsp;&nbsp;&lt;script type="text/blink"&gt;...</code><br>
+                <code>&nbsp;&nbsp;&lt;/script&gt;</code><br>
+                <code>&lt;/script&gt;</code>
+            </td>
         </tr>
 
-        <!-- 6. Shake -->
+        <!-- 3. Blink -->
         <tr>
-            <td><b>text/shake/横/縦</b><br><small>範囲全体のガタガタ振動</small></td>
+            <td><b>text/blink</b><br><small>ネットスケープ風点滅</small></td>
             <td>
-                <script type="text/shake/50px/20px">
-                    <div style="background-color: #ff0055; padding: 5px; font-weight: bold;">大・激・震</div>
+                <script type="text/blink">
+                    <span style="color: #ff3333; font-weight: bold;">この文字は点滅を繰り返します</span>
                 </script>
             </td>
-            <td><code>&lt;script type="text/shake/50px/20px"&gt;範囲&lt;/script&gt;</code></td>
+            <td><code>&lt;script type="text/blink"&gt;点滅文字&lt;/script&gt;</code></td>
         </tr>
 
-        <!-- 7. Jump -->
+        <!-- 4. Rainbow -->
         <tr>
-            <td><b>text/jump/高さ</b><br><small>ぷにっと着地ジャンプ</small></td>
+            <td><b>text/rainbow</b><br><b>img/rainbow</b><br><small>無限七色変化</small></td>
             <td>
-                <script type="text/jump/80px">
+                <script type="text/rainbow">
+                    <span style="font-size: 18px; font-weight: bold;">レインボーテキスト</span>
+                </script>
+            </td>
+            <td><code>&lt;script type="text/rainbow"&gt;七色&lt;/script&gt;</code></td>
+        </tr>
+
+        <!-- 5. Slide -->
+        <tr>
+            <td><b>text/slide</b><br><b>text/slide/alternate</b><br><small>横スクロール＆往復</small></td>
+            <td>
+                <script type="text/slide/alternate">
+                    <span style="color: #00ff00;">左右の壁でビターン！と跳ね返るテキスト</span>
+                </script>
+            </td>
+            <td><code>&lt;script type="text/slide/alternate"&gt;往復&lt;/script&gt;</code></td>
+        </tr>
+
+        <!-- 6. Water -->
+        <tr>
+            <td><b>text/water/時間ms</b><br><small>歪みながらのゆらゆら水面風</small></td>
+            <td>
+                <script type="text/water/1200ms">
+                    <h3 style="color: #6600ff; margin: 0;">呪われた怪しい裏掲示板へようこそ……</h3>
+                </script>
+            </td>
+            <td><code>&lt;script type="text/water/1200ms"&gt;ゆらゆら&lt;/script&gt;</code></td>
+        </tr>
+
+        <!-- 7. Shake -->
+        <tr>
+            <td><b>text/shake/横幅/縦幅</b><br><small>自由なピクセル幅での大振動</small></td>
+            <td>
+                <script type="text/shake/20px/10px">
+                    <div style="background-color: #ff0055; padding: 5px; font-weight: bold; display: inline-block;">【警告エリア：大激震】</div>
+                </script>
+            </td>
+            <td><code>&lt;script type="text/shake/20px/10px"&gt;大振動&lt;/script&gt;</code></td>
+        </tr>
+
+        <!-- 8. Jump -->
+        <tr>
+            <td><b>text/jump/高さ</b><br><small>ぷにっと弾む着地ジャンプ</small></td>
+            <td>
+                <script type="text/jump/60px">
                     <h2 style="color: #ffff00; margin: 0;">ぴょん！</h2>
                 </script>
             </td>
-            <td><code>&lt;script type="text/jump/80px"&gt;跳ねる&lt;/script&gt;</code></td>
+            <td><code>&lt;script type="text/jump/60px"&gt;ジャンプ&lt;/script&gt;</code></td>
         </tr>
     </table>
 
     <hr style="border: 1px dashed #ff00ff; margin: 40px 0;">
 
     <center>
-        <p style="font-size: 12px; color: #666666;">ANGEL FIRE & GEOCITIES HOMAGE SYSTEM. ALL RIGHTS RESERVED.</p>
+        <p style="font-size: 12px; color: #666666;">GEOCITIES & NETSCAPE HOMAGE SPECIFICATION. ALL REPAIRED AND COMPLETED.</p>
     </center>
 
 </body>
