@@ -40,91 +40,166 @@ document.addEventListener("DOMContentLoaded", () => {
   `;
   document.head.appendChild(style);
 
-  const allScripts = document.querySelectorAll('script');
-  allScripts.forEach(script => {
+  const switchRegistry = {};
+  const regularScripts = [];
+
+  document.querySelectorAll('script').forEach(script => {
     const typeAttr = script.getAttribute('type');
     if (!typeAttr) return;
 
-    const rawContent = script.textContent.trim();
-
-    if (typeAttr.startsWith('switch')) {
+    if (typeAttr.startsWith('switch/')) {
       const parts = typeAttr.split('/');
-      if (parts.length === 2 || (parts.length === 3 && parts[2].endsWith('ms'))) {
+      if (parts.length === 3 && parts[1] !== 'ms' && !parts[1].endsWith('ms')) {
         const switchId = parts[1];
-        let intervalTime = 1000;
-        if (parts[2] && parts[2].endsWith('ms')) {
-          intervalTime = parseInt(parts[2], 10) || 1000;
+        const childId = parts[2];
+        if (!switchRegistry[switchId]) {
+          switchRegistry[switchId] = [];
         }
-
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = script.innerHTML;
-        const childScripts = tempDiv.querySelectorAll(`script[type^="switch/${switchId}/"]`);
-        
-        if (childScripts.length === 0) return;
-
-        const container = document.createElement('div');
-        container.style.display = 'inline-block';
-        const elements = [];
-
-        childScripts.forEach((child, index) => {
-          const itemDiv = document.createElement('div');
-          itemDiv.innerHTML = child.innerHTML.trim();
-          itemDiv.style.display = index === 0 ? 'block' : 'none';
-          container.appendChild(itemDiv);
-          elements.push(itemDiv);
+        switchRegistry[switchId].push({
+          order: parseInt(childId, 10) || 0,
+          html: script.innerHTML.trim(),
+          element: script
         });
-
-        script.parentNode.insertBefore(container, script);
-
-        let currentIndex = 0;
-        setInterval(() => {
-          elements[currentIndex].style.display = 'none';
-          currentIndex = (currentIndex + 1) % elements.length;
-          elements[currentIndex].style.display = 'block';
-        }, intervalTime);
+      } else {
+        regularScripts.push(script);
       }
-      return;
+    } else {
+      regularScripts.push(script);
+    }
+  });
+  regularScripts.forEach(script => {
+    const typeAttr = script.getAttribute('type');
+    if (!typeAttr.startsWith('switch')) return;
+
+    const parts = typeAttr.split('/');
+    const switchId = parts[1];
+    let intervalTime = 1000;
+    if (parts[2] && parts[2].endsWith('ms')) {
+      intervalTime = parseInt(parts[2], 10) || 1000;
     }
 
+    const data = switchRegistry[switchId];
+    if (!data || data.length === 0) return;
+
+    data.sort((a, b) => a.order - b.order);
+
+    const container = document.createElement('div');
+    container.style.display = 'inline-block';
+    const elements = [];
+
+    data.forEach((child, index) => {
+      const itemDiv = document.createElement('div');
+      itemDiv.innerHTML = child.html;
+      itemDiv.style.display = index === 0 ? 'block' : 'none';
+      container.appendChild(itemDiv);
+      elements.push(itemDiv);
+    });
+
+    script.parentNode.insertBefore(container, script);
+
+    let currentIndex = 0;
+    setInterval(() => {
+      elements[currentIndex].style.display = 'none';
+      currentIndex = (currentIndex + 1) % elements.length;
+      elements[currentIndex].style.display = 'block';
+    }, intervalTime);
+  });
+
+  regularScripts.forEach(script => {
+    const typeAttr = script.getAttribute('type');
+    if (!typeAttr || !typeAttr.includes('/') || typeAttr.startsWith('switch')) return;
+
+    const rawContent = script.textContent.trim();
     if (!rawContent) return;
 
-    if (typeAttr.includes('/')) {
-      const parts = typeAttr.split('/');
-      const mediaType = parts[0];
-      const effectType = parts[1];
-      const option1 = parts[2] || '';
-      const option2 = parts[3] || '';
+    const parts = typeAttr.split('/');
+    const mediaType = parts[0];
+    const effectType = parts[1];
+    const option1 = parts[2] || '';
+    const option2 = parts[3] || '';
 
-      let wrapper = document.createElement('div');
-      wrapper.style.display = 'inline-block';
+    let wrapper = document.createElement('div');
+    wrapper.style.display = 'inline-block';
 
-      let targetContainer = wrapper; 
+    let targetContainer = wrapper; 
 
-      if (effectType === 'slide') {
-        const outer = document.createElement('div');
-        outer.className = 'retro-slide-outer';
-        const inner = document.createElement('div');
-        if (option1 === 'alternate') inner.className = 'retro-slide-inner-alternate';
-        else if (option1 === 'stop') inner.className = 'retro-slide-inner-stop';
-        else inner.className = 'retro-slide-inner-scroll';
-        outer.appendChild(inner);
-        wrapper.appendChild(outer);
-        targetContainer = inner;
-        wrapper.style.display = 'block';
+    if (effectType === 'slide') {
+      const outer = document.createElement('div');
+      outer.className = 'retro-slide-outer';
+      const inner = document.createElement('div');
+      if (option1 === 'alternate') inner.className = 'retro-slide-inner-alternate';
+      else if (option1 === 'stop') inner.className = 'retro-slide-inner-stop';
+      else inner.className = 'retro-slide-inner-scroll';
+      outer.appendChild(inner);
+      wrapper.appendChild(outer);
+      targetContainer = inner;
+      wrapper.style.display = 'block';
+    }
+
+    if (mediaType === 'text') {
+      targetContainer.innerHTML = rawContent;
+      
+      if (effectType === 'blink') {
+        targetContainer.classList.add('retro-effect-blink');
+      } else if (effectType === 'rainbow') {
+        targetContainer.classList.add('retro-effect-rainbow-text');
+        targetContainer.querySelectorAll('*').forEach(child => child.classList.add('retro-effect-rainbow-text'));
+      } else if (effectType === 'water') {
+        targetContainer.classList.add('retro-effect-water');
+        const duration = (option1 && option1.endsWith('ms')) ? option1 : '2000ms';
+        targetContainer.style.animation = `retroWaterWave ${duration} ease-in-out infinite`;
+      } else if (effectType === 'shake') {
+        if (option1 && option2) {
+          const animName = `shake_${Math.random().toString(36).substr(2,9)}`;
+          const dynStyle = document.createElement('style');
+          dynStyle.textContent = `
+            @keyframes ${animName} {
+              0% { transform: translate(0,0); }
+              20% { transform: translate(calc(-1 * ${option1}), ${option2}); }
+              40% { transform: translate(${option1}, calc(-1 * ${option2})); }
+              60% { transform: translate(calc(-0.5 * ${option1}), calc(-1 * ${option2})); }
+              80% { transform: translate(${option1}, ${option2}); }
+              100% { transform: translate(0,0); }
+            }
+          `;
+          document.head.appendChild(dynStyle);
+          targetContainer.style.display = 'inline-block';
+          targetContainer.style.animation = `${animName} 0.15s linear infinite`;
+        } else {
+          targetContainer.classList.add('retro-effect-shake-default');
+        }
+      } else if (effectType === 'jump') {
+        const animName = `jump_${Math.random().toString(36).substr(2,9)}`;
+        const dynStyle = document.createElement('style');
+        const jumpHeight = option1 || '30px';
+        dynStyle.textContent = `
+          @keyframes ${animName} {
+            0%, 100% { transform: translateY(0) scaleY(1); animation-timing-function: ease-out; }
+            45% { transform: translateY(calc(-1 * ${jumpHeight})) scaleY(1); animation-timing-function: ease-in; }
+            90% { transform: translateY(0) scaleY(0.9); }
+          }
+        `;
+        document.head.appendChild(dynStyle);
+        targetContainer.style.display = 'inline-block';
+        targetContainer.style.animation = `${animName} 0.6s infinite`;
       }
-
-      if (mediaType === 'text') {
+    } 
+    else if (mediaType === 'img') {
+      if (rawContent.startsWith('<img')) {
         targetContainer.innerHTML = rawContent;
-        
+      } else {
+        targetContainer.innerHTML = `<img src="${rawContent}" alt="Retro Image">`;
+      }
+      const imgElement = targetContainer.querySelector('img');
+      if (imgElement) {
         if (effectType === 'blink') {
-          targetContainer.classList.add('retro-effect-blink');
+          imgElement.classList.add('retro-effect-blink');
         } else if (effectType === 'rainbow') {
-          targetContainer.classList.add('retro-effect-rainbow-text');
-          targetContainer.querySelectorAll('*').forEach(child => child.classList.add('retro-effect-rainbow-text'));
+          imgElement.classList.add('retro-effect-rainbow-img');
         } else if (effectType === 'water') {
-          targetContainer.classList.add('retro-effect-water');
+          imgElement.classList.add('retro-effect-water');
           const duration = (option1 && option1.endsWith('ms')) ? option1 : '2000ms';
-          targetContainer.style.animation = `retroWaterWave ${duration} ease-in-out infinite`;
+          imgElement.style.animation = `retroWaterWave ${duration} ease-in-out infinite`;
         } else if (effectType === 'shake') {
           if (option1 && option2) {
             const animName = `shake_${Math.random().toString(36).substr(2,9)}`;
@@ -140,10 +215,10 @@ document.addEventListener("DOMContentLoaded", () => {
               }
             `;
             document.head.appendChild(dynStyle);
-            targetContainer.style.display = 'inline-block';
-            targetContainer.style.animation = `${animName} 0.15s linear infinite`;
+            imgElement.style.display = 'inline-block';
+            imgElement.style.animation = `${animName} 0.15s linear infinite`;
           } else {
-            targetContainer.classList.add('retro-effect-shake-default');
+            imgElement.classList.add('retro-effect-shake-default');
           }
         } else if (effectType === 'jump') {
           const animName = `jump_${Math.random().toString(36).substr(2,9)}`;
@@ -157,67 +232,14 @@ document.addEventListener("DOMContentLoaded", () => {
             }
           `;
           document.head.appendChild(dynStyle);
-          targetContainer.style.display = 'inline-block';
-          targetContainer.style.animation = `${animName} 0.6s infinite`;
-        }
-      } 
-      else if (mediaType === 'img') {
-        if (rawContent.startsWith('<img')) {
-          targetContainer.innerHTML = rawContent;
-        } else {
-          targetContainer.innerHTML = `<img src="${rawContent}" alt="Retro Image">`;
-        }
-        const imgElement = targetContainer.querySelector('img');
-        if (imgElement) {
-          if (effectType === 'blink') {
-            imgElement.classList.add('retro-effect-blink');
-          } else if (effectType === 'rainbow') {
-            imgElement.classList.add('retro-effect-rainbow-img');
-          } else if (effectType === 'water') {
-            imgElement.classList.add('retro-effect-water');
-            const duration = (option1 && option1.endsWith('ms')) ? option1 : '2000ms';
-            imgElement.style.animation = `retroWaterWave ${duration} ease-in-out infinite`;
-          } else if (effectType === 'shake') {
-            if (option1 && option2) {
-              const animName = `shake_${Math.random().toString(36).substr(2,9)}`;
-              const dynStyle = document.createElement('style');
-              dynStyle.textContent = `
-                @keyframes ${animName} {
-                  0% { transform: translate(0,0); }
-                  20% { transform: translate(calc(-1 * ${option1}), ${option2}); }
-                  40% { transform: translate(${option1}, calc(-1 * ${option2})); }
-                  60% { transform: translate(calc(-0.5 * ${option1}), calc(-1 * ${option2})); }
-                  80% { transform: translate(${option1}, ${option2}); }
-                  100% { transform: translate(0,0); }
-                }
-              `;
-              document.head.appendChild(dynStyle);
-              imgElement.style.display = 'inline-block';
-              imgElement.style.animation = `${animName} 0.15s linear infinite`;
-            } else {
-              imgElement.classList.add('retro-effect-shake-default');
-            }
-          } else if (effectType === 'jump') {
-            const animName = `jump_${Math.random().toString(36).substr(2,9)}`;
-            const dynStyle = document.createElement('style');
-            const jumpHeight = option1 || '30px';
-            dynStyle.textContent = `
-              @keyframes ${animName} {
-                0%, 100% { transform: translateY(0) scaleY(1); animation-timing-function: ease-out; }
-                45% { transform: translateY(calc(-1 * ${jumpHeight})) scaleY(1); animation-timing-function: ease-in; }
-                90% { transform: translateY(0) scaleY(0.9); }
-              }
-            `;
-            document.head.appendChild(dynStyle);
-            imgElement.style.display = 'inline-block';
-            imgElement.style.animation = `${animName} 0.6s infinite`;
-          }
+          imgElement.style.display = 'inline-block';
+          imgElement.style.animation = `${animName} 0.6s infinite`;
         }
       }
+    }
 
-      if (wrapper.innerHTML) {
-        script.parentNode.insertBefore(wrapper, script);
-      }
+    if (wrapper.innerHTML) {
+      script.parentNode.insertBefore(wrapper, script);
     }
   });
 });
