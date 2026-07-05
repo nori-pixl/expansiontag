@@ -41,42 +41,52 @@ document.addEventListener("DOMContentLoaded", () => {
   document.head.appendChild(style);
 
   const allScripts = document.querySelectorAll('script');
-    allScripts.forEach(script => {
+  allScripts.forEach(script => {
     const typeAttr = script.getAttribute('type');
     if (!typeAttr) return;
 
     const rawContent = script.textContent.trim();
-    if (!rawContent) return;
 
     if (typeAttr.startsWith('switch')) {
       const parts = typeAttr.split('/');
-      let intervalTime = 1000;
-      if (parts[1] && parts[1].endsWith('ms')) {
-        intervalTime = parseInt(parts[1], 10) || 1000;
+      if (parts.length === 2 || (parts.length === 3 && parts[2].endsWith('ms'))) {
+        const switchId = parts[1];
+        let intervalTime = 1000;
+        if (parts[2] && parts[2].endsWith('ms')) {
+          intervalTime = parseInt(parts[2], 10) || 1000;
+        }
+
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = script.innerHTML;
+        const childScripts = tempDiv.querySelectorAll(`script[type^="switch/${switchId}/"]`);
+        
+        if (childScripts.length === 0) return;
+
+        const container = document.createElement('div');
+        container.style.display = 'inline-block';
+        const elements = [];
+
+        childScripts.forEach((child, index) => {
+          const itemDiv = document.createElement('div');
+          itemDiv.innerHTML = child.innerHTML.trim();
+          itemDiv.style.display = index === 0 ? 'block' : 'none';
+          container.appendChild(itemDiv);
+          elements.push(itemDiv);
+        });
+
+        script.parentNode.insertBefore(container, script);
+
+        let currentIndex = 0;
+        setInterval(() => {
+          elements[currentIndex].style.display = 'none';
+          currentIndex = (currentIndex + 1) % elements.length;
+          elements[currentIndex].style.display = 'block';
+        }, intervalTime);
       }
-
-      const container = document.createElement('div');
-      container.style.display = 'inline-block';
-      container.innerHTML = rawContent;
-
-      const children = Array.from(container.children).filter(el => /^\d+$/.test(el.tagName));
-      if (children.length === 0) return;
-
-      children.forEach((child, index) => {
-        child.style.display = index === 0 ? 'block' : 'none';
-      });
-
-      script.parentNode.insertBefore(container, script);
-
-      let currentIndex = 0;
-      setInterval(() => {
-        children[currentIndex].style.display = 'none';
-        currentIndex = (currentIndex + 1) % children.length;
-        children[currentIndex].style.display = 'block';
-      }, intervalTime);
-
       return;
     }
+
+    if (!rawContent) return;
 
     if (typeAttr.includes('/')) {
       const parts = typeAttr.split('/');
